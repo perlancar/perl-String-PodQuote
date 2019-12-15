@@ -44,7 +44,12 @@ will output:
 
 Another example:
 
- print pod_quote("Compare using Perl's <=> operator");
+ print pod_quote("=, an equal sign (=) at the beginning of string");
+
+will output:
+
+ E<61>, an equal sign (=) at the beginning of string
+
 
 =head1 DESCRIPTION
 
