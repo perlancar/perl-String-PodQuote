@@ -13,7 +13,7 @@ use Exporter qw(import);
 our @EXPORT_OK = qw(pod_escape pod_quote);
 
 our %transforms = (
-    "<"  => "E<lt>",
+    ( map { ("$_<" => "${_}E<lt>") } 'A'..'Z' ),
     ">"  => "E<gt>",
     " "  => "E<32>",
     "\t" => "E<9>",
@@ -26,11 +26,7 @@ sub pod_escape {
     my $opts = ref $_[0] eq 'HASH' ? shift : {};
     my $text = shift;
 
-    $text =~ s{
-                  ((?<=[A-Z])<|>|/|\||^[=\x09\x20])
-          }{
-              $transforms{$1}
-    }egmx;
+    $text =~ s{ ( [A-Z]< | [>/|] | ^[ \t=] ) }{$transforms{$1}}gmx;
     $text;
 }
 
