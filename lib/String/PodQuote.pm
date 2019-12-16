@@ -62,7 +62,7 @@ Putting text inside a POD link:
 
 will output:
 
- L<Some description containing E<lt>, E<gt>, E<verbar>, E<sol>|Some::Module>
+ L<Some description containing <, E<gt>, E<verbar>, E<sol>|Some::Module>
 
 
 =head1 DESCRIPTION
