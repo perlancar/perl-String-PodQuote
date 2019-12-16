@@ -23,7 +23,6 @@ our %transforms = (
 );
 
 sub pod_escape {
-    my $opts = ref $_[0] eq 'HASH' ? shift : {};
     my $text = shift;
 
     $text =~ s{ ( [A-Z]< | [>/|] | ^[ \t=] ) }{$transforms{$1}}gmx;
