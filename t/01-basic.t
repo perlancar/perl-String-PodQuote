@@ -7,8 +7,7 @@ use Test::More 0.98;
 
 use String::PodQuote qw(pod_quote);
 
-is(pod_quote("Perl's <=> and < operators"), "Perl's E<lt>=> and E<lt> operators");
-is(pod_quote("E<lt> and C<< foo >>"), "EE<lt>lt> and CE<lt>E<lt> foo >>");
+is(pod_quote("<>, C<=>, |, /"), "<E<gt>, CE<lt>=E<gt>, E<verbar>, E<sol>");
 
 is(pod_quote("=foo"), "E<61>foo");
 is(pod_quote("bar =foo"), "bar =foo");

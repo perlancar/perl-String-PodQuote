@@ -6,95 +6,98 @@ package String::PodQuote;
 # VERSION
 
 use 5.010001;
-use strict;
+use strict 'subs', 'vars';
 use warnings;
 
 use Exporter qw(import);
-our @EXPORT_OK = qw(pod_quote);
+our @EXPORT_OK = qw(pod_escape pod_quote);
 
-sub pod_quote {
+our %transforms = (
+    "<"  => "E<lt>",
+    ">"  => "E<gt>",
+    " "  => "E<32>",
+    "\t" => "E<9>",
+    "="  => "E<61>",
+    "/"  => "E<sol>",
+    "|"  => "E<verbar>",
+);
+
+sub pod_escape {
     my $opts = ref $_[0] eq 'HASH' ? shift : {};
     my $text = shift;
 
     $text =~ s{
-                  (<|^[=\x09\x20])
+                  ((?<=[A-Z])<|>|/|\||^[=\x09\x20])
           }{
-              if ($1 eq '<') {
-                  'E<lt>'
-              } else {
-                  'E<' . ord($1) . '>'
-              }
+              $transforms{$1}
     }egmx;
     $text;
 }
 
+*pod_quote = \&pod_escape;
+
 1;
 
-# ABSTRACT: Quote special characters that might be interpreted by a POD parser
+# ABSTRACT: Escape/quote special characters that might be interpreted by a POD parser
 
 =head1 SYNOPSIS
 
- use String::PodQuote qw(pod_quote);
+ use String::PodQuote qw(pod_escape);
 
- print pod_quote("Compare using Perl's <=> operator");
+Putting a text as-is in an ordinary paragraph:
 
-will output:
-
- Compare using Perl's E<lt>=> operator.
-
-Another example:
-
- print pod_quote("=, an equal sign (=) at the beginning of string");
+ print "=pod\n\n", pod_escape("First paragraph containing C<=>.\n\n   Second indented paragraph.\n\n"), "=cut\n\n";
 
 will output:
 
- E<61>, an equal sign (=) at the beginning of string
+ =pod
+
+ First paragraph containing CE<lt>=E<gt>.
+
+ E<32>  Second indented paragraph.
+
+Putting text inside a POD link:
+
+ print "L<", pod_escape("Some description containing <, >, |, /"), "|Some::Module>";
+
+will output:
+
+ L<Some description containing E<lt>, E<gt>, E<verbar>, E<sol>|Some::Module>
 
 
 =head1 DESCRIPTION
 
-If you want to put a piece of plaintext into a POD document to be displayed
-as-is when rendered as POD, you will need to quote special characters that might
-be interpreted by a POD parser. This module provides the L</pod_quote> routine
-to do that.
-
-(Alternatively, you can indent each line of the text so it will be rendered
-verbatim in the POD).
-
 
 =head1 FUNCTIONS
 
-=head2 pod_quote
+=head2 pod_escape
 
 Usage:
 
- $quoted = pod_quote([ \%opts, ] $text);
+ $escaped = pod_escape($text);
 
-Quote special characters that might be interpreted by a POD parser. Basically
-the equivalent of L<HTML::Entities>'s C<encode_entities> when outputting to
-HTML, or L<String::ShellQuote>'s C<shell_quote> when passing a string to shell.
+Quote special characters that might be interpreted by a POD parser.
 
-Will do the following:
+The following characters are escaped:
 
-=over
+ Character                                    Escaped into
+ ---------                                    ------------
+ < (only when preceded by a capital letter)   E<lt>
+ >                                            E<gt>
+ |                                            E<verbar>
+ /                                            E<sol>
+ (Space) (only at beginning of string/line)   E<32>
+ (Tab) (only at beginning of string/line)     E<9>
+ = (only at beginning of string/line)         E<61>
 
-=item * Escape "<" into EE<lt>ltE<gt>
+=head2 pod_quote
 
-=item * Escape "=" at the start of string or line into EE<lt>61<gt>
-
-=item * Escape Space or Tab at the start of string or line into EE<lt>32E<gt> or EE<lt>9E<gt>, respectively.
-
-=back
-
-Caveats:
-
-=over
-
-=item * Newlines will not be rendered exactly; it will follow POD's rules
-
-=back
+Alias for L<pod_escape>.
 
 
 =head1 SEE ALSO
 
 L<perlpod>
+
+Tangentially related modules: L<HTML::Entities>, L<URI::Escape>,
+L<String::ShellQuote>, L<String::Escape>, L<String::PerlQuote>.
